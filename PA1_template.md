@@ -1,13 +1,6 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-author: "Chris Palmer"
-date: "Wednesday, July 15, 2015"
-output:
-  html_document:
-    fig_height: 6
-    fig_width: 9
-    keep_md: yes
----
+# Reproducible Research: Peer Assessment 1
+Chris Palmer  
+Wednesday, July 15, 2015  
 ## Introduction
 
 This is a Coursera assignment for the Reproducible Research module, which makes
@@ -46,7 +39,8 @@ analysis of it, then plotting and commentry of the analytical results.
 The following code reads the data in activity.csv into a table, then creates
 a subset of the data that excludes invalid (NA) data:
 
-```{r}
+
+```r
 suppressPackageStartupMessages({
 library(data.table)
 library(scales)
@@ -96,7 +90,6 @@ date_today <- Sys.Date( )
 time1 <- strptime(paste(date_today, "00:00:00 AEST"), "%Y-%m-%d %H:%M:%S")
 time2 <- strptime(paste(date_today, "23:55:00 AEST"), "%Y-%m-%d %H:%M:%S")
 xlimt <- as.POSIXct(c(time1, time2), origin="1970-01-01", tz="Australia/Sydney")
-
 ```
 
 ##
@@ -107,7 +100,8 @@ xlimt <- as.POSIXct(c(time1, time2), origin="1970-01-01", tz="Australia/Sydney")
 The subsetted good data is used to calculate means and medians, and is plotted 
 as a histogram:
 
-```{r fig.height = 5, fig.width = 7}
+
+```r
 # Calculate and report the mean and median of the total no. steps taken per day
 stepsperday  <- goodActivity[, .(StepSum = sum(steps)), by= .(date)]
 
@@ -134,12 +128,14 @@ plt <- ggplot(stepsperday, aes(x=StepSum)) +
 print(plt)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 
 Steps Measurement           | Value
 ------------------          | -----------------
-Total number of steps       | `r stepSums$stepsTotal`
-Mean of the total steps     | `r sprintf("%.5f", stepSums$stepsMean)`
-Median of the total steps   | `r sprintf("%.5f", stepSums$stepsMedian)`
+Total number of steps       | 570608
+Mean of the total steps     | 10766.18868
+Median of the total steps   | 10765.00000
 
 ##
 ##
@@ -149,7 +145,8 @@ Median of the total steps   | `r sprintf("%.5f", stepSums$stepsMedian)`
 The data is summarized over all days and plotted as a time series graph in terms
 of 5 minute intervals per day:
 
-``` {r}
+
+```r
 # calculate the mean of the steps per time interval over all days
 # including all variations of interval fields in case they are required
 stepspertime <- goodActivity[, .(intervalMean = mean(steps)),
@@ -209,9 +206,11 @@ plt <- ggplot(stepspertime, aes(datetime, intervalMean)) +
 print(plt)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 A smoothed conditional mean line has been fitted to assist in visualizing activity patterns
 
-The maximum number of steps on average is `r round(maxMean, 0)`, which occurs at `r maxInterval`
+The maximum number of steps on average is 206, which occurs at 08:35
 
 ##
 ##
@@ -223,7 +222,8 @@ this as the basis for supplying a value to the NAs, so that the entire data set
 can be reported on. Plot the fixed entire data in a histogram, and comment on
 the differences to the previous subset of good data:
 
-``` {r fig.height = 5, fig.width = 6}
+
+```r
 # report on NAs in the original data, then fix them with a mean per interval slot
 NA_Rows <- sum(is.na(activitytable$steps) == TRUE)
 
@@ -247,7 +247,8 @@ Taking into consideration that we are being asked to report on differences in
 activity between weekdays and weekends, also calculate the mean for each of
 weekdays and weekends, to test the effect of a more targeted fix:
 
-``` {r}
+
+```r
 meanStepsperWeekday <- goodActivity[
                     !(weekdays(goodActivity$date) %in% c("Saturday", "Sunday")),
                              .(StepMean = mean(steps)), 
@@ -264,14 +265,14 @@ MeanWeekend <- meanStepsperWeekend[, .(mean(StepMean))]
 
 Mean of Steps per 5 minute slot | Value
 --------------------------      | -----------------
-Mean over all days              | `r MeanAlldays`
-Mean over weekdays              | `r MeanWeekday`
-Mean over weekends              | `r MeanWeekend`
+Mean over all days              | 37.3828654
+Mean over weekdays              | 35.337963
+Mean over weekends              | 43.0784493
 
 The conclusion is that we should use a targeted approach per weekday/weekend split when updating our NAs.
 
-``` {r fig.height = 5, fig.width = 7}
 
+```r
 # copy starting data set into a complete set with NAs, then substitute them
 # based on a match on interval into the table of means
 # See Reference 4
@@ -330,9 +331,11 @@ plt <- ggplot(stepsperdayfixed, aes(x=StepSum)) +
 print(plt)
 ```
 
-There were `r NA_Rows` rows containing NA in the steps value.
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
 
-The NAs were split over `r NA_days$uniqdays` days, consisting of `r NA_Weekdays$uniqdays` week days, and `r NA_Weekends$uniqdays` weekend days.
+There were 2304 rows containing NA in the steps value.
+
+The NAs were split over 8 days, consisting of 6 week days, and 2 weekend days.
 
 NAs were replaced with mean values calculated over a weekday/weekend split per 5 minute slot from the previously reported data.
 
@@ -342,9 +345,9 @@ The median calculation has decreased to a greater extent. This is likely the eff
 
 Steps Measurement   | New Value (mean from weekday/end split)        | Value without weekday/end split | Previous Value
 ------------------  | -----------                                    | --------------------------      | ----------------------    
-Total no. of steps  | `r sprintf("%.0f", stepSumsfixed$stepsTotal)`  | `r sprintf("%.0f", stepSumsfixed$stepsTotal)`    |`r stepSums$stepsTotal`
-Mean of the total   | `r sprintf("%.5f", stepSumsfixed$stepsMean)`   | `r sprintf("%.5f", stepSumsAllfixed$stepsMean)`  | `r sprintf("%.5f", stepSums$stepsMean)`
-Median of the total | `r sprintf("%.5f", stepSumsfixed$stepsMedian)` | `r sprintf("%.5f", stepSumsAllfixed$stepsMedian)`| `r sprintf("%.5f", stepSums$stepsMedian)`
+Total no. of steps  | 656485  | 656485    |570608
+Mean of the total   | 10762.05224   | 10766.19872  | 10766.18868
+Median of the total | 10571.00000 | 10766.26524| 10765.00000
 
 ##
 ##
@@ -353,7 +356,8 @@ Median of the total | `r sprintf("%.5f", stepSumsfixed$stepsMedian)` | `r sprint
 
 Show the differences in activity patterns between week days and weekends:
 
-```{r fig.height = 8, fig.width = 9}
+
+```r
 # plot the differences in activity over week days vs weekends
 activitytablefixed$daytype <- factor(
          ifelse(weekdays(activitytablefixed$date) %in% c("Saturday", "Sunday"),
@@ -390,6 +394,8 @@ pltf <- ggplot(stepspertimefixed, aes(datetime, intervalMean)) +
 
 print(pltf + facet_wrap(~daytype, ncol = 1))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
 
 Smoothed conditional mean lines have been fitted to assist in visualizing activity patterns
 
